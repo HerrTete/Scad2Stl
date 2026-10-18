@@ -315,11 +315,30 @@ public final class Evaluator {
             let childUnion = CSGGeometry.union(evaluatedChildren)
             result = childUnion.withColor(color)
             
-        // 4. Extrusion
         case "linear_extrude":
             result = BuiltinModules.linearExtrude(args: evaluatedArgs, children: evaluatedChildren)
         case "rotate_extrude":
             result = BuiltinModules.rotateExtrude(args: evaluatedArgs, children: evaluatedChildren, env: callEnv)
+            
+        // 5. Advanced Primitives, Transforms & CSG
+        case "text":
+            result = BuiltinModules.createText(args: evaluatedArgs)
+        case "minkowski":
+            result = BuiltinModules.createMinkowski(children: evaluatedChildren)
+        case "multmatrix":
+            result = BuiltinModules.multmatrix(args: evaluatedArgs, children: evaluatedChildren)
+        case "resize":
+            result = BuiltinModules.resize(args: evaluatedArgs, children: evaluatedChildren)
+        case "offset":
+            result = BuiltinModules.offset(args: evaluatedArgs, children: evaluatedChildren)
+        case "projection":
+            result = BuiltinModules.projection(args: evaluatedArgs, children: evaluatedChildren)
+        case "surface":
+            result = BuiltinModules.createSurface(args: evaluatedArgs, basePath: basePath)
+        case "import":
+            result = BuiltinModules.importFile(args: evaluatedArgs, basePath: basePath)
+        case "render":
+            result = BuiltinModules.render(args: evaluatedArgs, children: evaluatedChildren)
             
         default:
             // 5. User-Defined Module

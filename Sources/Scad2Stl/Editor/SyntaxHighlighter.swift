@@ -30,7 +30,7 @@ public final class SyntaxHighlighter {
         self.font = font
         
         let keywords = ["module", "function", "if", "else", "for", "intersection_for", "let", "each", "true", "false", "undef", "include", "use", "echo", "assert"]
-        let builtins = ["cube", "sphere", "cylinder", "polyhedron", "square", "circle", "polygon", "translate", "rotate", "scale", "mirror", "color", "union", "difference", "intersection", "hull", "linear_extrude", "rotate_extrude", "sin", "cos", "tan", "asin", "acos", "atan", "atan2", "abs", "sign", "floor", "ceil", "round", "sqrt", "exp", "log", "ln", "pow", "min", "max", "norm", "cross", "rands", "str", "chr", "ord", "len", "concat", "lookup", "children"]
+        let builtins = ["cube", "sphere", "cylinder", "polyhedron", "square", "circle", "polygon", "text", "translate", "rotate", "scale", "mirror", "color", "multmatrix", "resize", "offset", "projection", "surface", "import", "minkowski", "render", "union", "difference", "intersection", "hull", "linear_extrude", "rotate_extrude", "sin", "cos", "tan", "asin", "acos", "atan", "atan2", "abs", "sign", "floor", "ceil", "round", "sqrt", "exp", "log", "ln", "pow", "min", "max", "norm", "cross", "rands", "str", "chr", "ord", "len", "concat", "lookup", "children", "search", "version", "version_num", "parent_module"]
         
         self.keywordRegex = try? NSRegularExpression(pattern: "\\b(" + keywords.joined(separator: "|") + ")\\b")
         self.builtinRegex = try? NSRegularExpression(pattern: "\\b(" + builtins.joined(separator: "|") + ")\\b")

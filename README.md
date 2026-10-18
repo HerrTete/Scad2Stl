@@ -208,28 +208,47 @@ The 3D CAD viewport uses standard engineering navigation patterns:
 * `square(size, center = false)`: Rectangles and squares in the XY plane.
 * `circle(r, d, $fn)`: 2D disks and circles with custom `$fn` resolution.
 * `polygon(points)`: Arbitrary 2D closed paths.
+* `text(text, size = 10, font = "Helvetica", halign = "left", valign = "baseline", spacing = 1.0)`: Native CoreText vector text rendered into 2D outlines for direct extrusion.
 
-### 3. Boolean CSG Operations
+### 3. Boolean CSG Operations & Blends
 * `union() { ... }`: Combines multiple solid bodies.
 * `difference() { A(); B(); ... }`: Subtracts subsequent child objects from the first object.
 * `intersection() { ... }`: Computes the intersecting volume shared by all child objects.
-
-### 4. Convex Hull
 * `hull() { ... }`: Computes the minimal 3D convex hull encompassing all children (ideal for organic shapes, filleted brackets, and smooth joint transitions).
+* `minkowski() { ... }`: Computes the Minkowski sum approximation using multi-point edge-sweep and convex hulls for rounded corners and filleted solid geometry without external C++ dependencies.
+* `render(convexity = 1) { ... }`: Forces full CSG mesh evaluation pass-through.
 
-### 5. Extrusions
-* `linear_extrude(height, center = false, twist = 0, slices = ...)`: Extrudes 2D shapes into 3D, with optional helical `twist` for threads and spiral designs.
+### 4. Transformations & Matrix Operations
+* `translate([x, y, z]) { ... }`: Translates geometry in 3D space.
+* `rotate([x, y, z])` or `rotate(a, [x, y, z]) { ... }`: Rotates geometry about axes.
+* `scale([x, y, z]) { ... }`: Scales geometry along Cartesian axes.
+* `mirror([x, y, z]) { ... }`: Mirrors geometry across plane with automatic normal winding correction.
+* `multmatrix(m) { ... }`: Applies an arbitrary $4\times 4$ affine transformation matrix, automatically correcting polygon winding if the determinant is negative.
+* `resize([x, y, z], auto = false) { ... }`: Resizes children to fit an exact target bounding box, with support for automatic aspect ratio preservation when axes are set to `0`.
+* `color(c, alpha = 1.0) { ... }`: Applies RGB or named color materials to geometry.
+
+### 5. 2D Modifiers & Projections
+* `offset(r = ..., delta = ..., chamfer = ...) { ... }`: Dilates or erodes 2D contours inward or outward.
+* `projection(cut = false) { ... }`: Generates 2D planar outlines from 3D models:
+  * `cut = true`: Slices geometry precisely at the $Z = 0$ plane.
+  * `cut = false`: Flattens all geometry downward onto the XY ground plane.
+
+### 6. Extrusions & Reliefs
+* `linear_extrude(height, center = false, twist = 0, scale = 1.0, slices = ...)`: Extrudes 2D paths into 3D solids, with optional helical `twist` for threads and `scale` factor for tapered extrusions.
 * `rotate_extrude(angle = 360, $fn = ...)`: Revolves a 2D profile around the Z-axis (e.g. tori, rings, vases).
+* `surface(file = "...", center = false, invert = false)`: Generates a 3D terrain/relief heightmap directly from grayscale PNG/JPEG images or ASCII height matrix `.dat` files.
+* `import(file = "...")`: Imports external 3D geometry files (`.stl` and `.obj`) directly into the CSG tree for cutting, union, and transformation.
 
-### 6. Control Flow & Language Constructs
+### 7. Control Flow, Modules & Functions
 * `module name(...) { ... }`: Custom reusable parametric modules with default arguments.
-* `function name(...) = ...`: Pure mathematical functions with local expressions.
+* `function name(...) = ...`: Pure mathematical functions with local expressions and recursion.
 * `for (i = [start : step : end])`: Loops with support for multi-variable ranges and nested geometry generation.
 * `if (condition) { ... } else { ... }`: Conditional geometry branching.
 * `let(var = val, ...) [ ... ]`: Local variable scopes inside expressions and list comprehensions.
 * `echo(...)`: Formatted debug printing to the console panel.
 * Special Variables: `$fn`, `$fa`, `$fs`, `$children`, `$t`.
 * Math Library: `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `atan2`, `sqrt`, `pow`, `abs`, `floor`, `ceil`, `round`, `min`, `max`, `exp`, `log`, `ln`, `sign`.
+* Spec Functions: `search(key, list)`, `version()`, `version_num()`, `parent_module(index)`.
 
 ---
 

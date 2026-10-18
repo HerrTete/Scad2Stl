@@ -342,6 +342,141 @@ final class EvaluatorTests: XCTestCase {
         try STLExporter.exportToFile(mesh: mesh, at: outURL, format: .binary, name: "Basketball_Full")
         print("Exported full STL to \(outURL.path), size: \(try Data(contentsOf: outURL).count) bytes")
     }
+    func testTextExtrude() {
+        let script = """
+        linear_extrude(height = 5) {
+            text("Hello", size = 10);
+        }
+        """
+        let parser = Parser(source: script)
+        let prog = parser.parse()
+        let evaluator = Evaluator()
+        let mesh = evaluator.evaluate(program: prog)
+        XCTAssertEqual(evaluator.errors.count, 0)
+        XCTAssertFalse(mesh.polygons.isEmpty)
+        XCTAssertEqual(mesh.bounds.max.z, 5.0, accuracy: 0.01)
+    }
+    
+    func testMultmatrix() {
+        let script = """
+        multmatrix([
+            [1, 0, 0, 10],
+            [0, 1, 0, 20],
+            [0, 0, 1, 30],
+            [0, 0, 0, 1]
+        ]) {
+            cube([2, 2, 2], center = true);
+        }
+        """
+        let parser = Parser(source: script)
+        let prog = parser.parse()
+        let evaluator = Evaluator()
+        let mesh = evaluator.evaluate(program: prog)
+        XCTAssertEqual(evaluator.errors.count, 0)
+        XCTAssertFalse(mesh.polygons.isEmpty)
+        XCTAssertEqual(mesh.bounds.center.x, 10.0, accuracy: 0.01)
+        XCTAssertEqual(mesh.bounds.center.y, 20.0, accuracy: 0.01)
+        XCTAssertEqual(mesh.bounds.center.z, 30.0, accuracy: 0.01)
+    }
+    
+    func testResize() {
+        let script = """
+        resize([30, 40, 50]) {
+            cube(10, center = true);
+        }
+        """
+        let parser = Parser(source: script)
+        let prog = parser.parse()
+        let evaluator = Evaluator()
+        let mesh = evaluator.evaluate(program: prog)
+        XCTAssertEqual(evaluator.errors.count, 0)
+        XCTAssertFalse(mesh.polygons.isEmpty)
+        XCTAssertEqual(mesh.bounds.size.x, 30.0, accuracy: 0.01)
+        XCTAssertEqual(mesh.bounds.size.y, 40.0, accuracy: 0.01)
+        XCTAssertEqual(mesh.bounds.size.z, 50.0, accuracy: 0.01)
+    }
+    
+    func testOffsetAndLinearExtrude() {
+        let script = """
+        linear_extrude(height = 2) {
+            offset(r = 2) {
+                circle(r = 5, $fn = 16);
+            }
+        }
+        """
+        let parser = Parser(source: script)
+        let prog = parser.parse()
+        let evaluator = Evaluator()
+        let mesh = evaluator.evaluate(program: prog)
+        XCTAssertEqual(evaluator.errors.count, 0)
+        XCTAssertFalse(mesh.polygons.isEmpty)
+        XCTAssertGreaterThan(mesh.bounds.size.x, 10.0)
+    }
+    
+    func testMinkowskiApproximation() {
+        let script = """
+        minkowski() {
+            cube([10, 10, 2], center = true);
+            sphere(r = 2, $fn = 12);
+        }
+        """
+        let parser = Parser(source: script)
+        let prog = parser.parse()
+        let evaluator = Evaluator()
+        let mesh = evaluator.evaluate(program: prog)
+        XCTAssertEqual(evaluator.errors.count, 0)
+        XCTAssertFalse(mesh.polygons.isEmpty)
+        XCTAssertGreaterThan(mesh.bounds.size.x, 10.0)
+        XCTAssertGreaterThan(mesh.bounds.size.z, 2.0)
+    }
+    
+    func testProjection() {
+        let script = """
+        projection(cut = false) {
+            sphere(r = 10, $fn = 16);
+        }
+        """
+        let parser = Parser(source: script)
+        let prog = parser.parse()
+        let evaluator = Evaluator()
+        let mesh = evaluator.evaluate(program: prog)
+        XCTAssertEqual(evaluator.errors.count, 0)
+        XCTAssertFalse(mesh.polygons.isEmpty)
+    }
+    
+    func testSearchAndVersionFunctions() {
+        let script = """
+        v = version();
+        vn = version_num();
+        echo("version:", v, "num:", vn);
+        idx = search("b", ["a", "b", "c"]);
+        echo("search_result:", idx);
+        """
+        let parser = Parser(source: script)
+        let prog = parser.parse()
+        let evaluator = Evaluator()
+        _ = evaluator.evaluate(program: prog)
+        XCTAssertEqual(evaluator.errors.count, 0)
+        let out = evaluator.consoleOutput.joined(separator: "\n")
+        XCTAssertTrue(out.contains("2024"))
+        XCTAssertTrue(out.contains("search_result: [1]"))
+    }
+    
+    func testLinearExtrudeScale() {
+        let script = """
+        linear_extrude(height = 10, scale = 2.0) {
+            square([4, 4], center = true);
+        }
+        """
+        let parser = Parser(source: script)
+        let prog = parser.parse()
+        let evaluator = Evaluator()
+        let mesh = evaluator.evaluate(program: prog)
+        XCTAssertEqual(evaluator.errors.count, 0)
+        XCTAssertFalse(mesh.polygons.isEmpty)
+        XCTAssertEqual(mesh.bounds.size.z, 10.0, accuracy: 0.01)
+        XCTAssertEqual(mesh.bounds.size.x, 8.0, accuracy: 0.1)
+    }
 }
 
 

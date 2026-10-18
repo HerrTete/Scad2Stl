@@ -239,6 +239,54 @@ public struct BuiltinFunctions {
         "is_function": { args in
             if case .functionClosure = args.first { return .bool(true) }
             return .bool(false)
+        },
+        
+        // MARK: - Query & Search
+        "search": { args in
+            guard args.count >= 2 else { return .undef }
+            let matchVal = args[0]
+            let table = args[1]
+            let numReturns = (args.count > 2 ? args[2].asNumber() : 1) ?? 1
+            let colNum = Int((args.count > 3 ? args[3].asNumber() : 0) ?? 0)
+            
+            if case .string(let target) = matchVal, case .string(let src) = table {
+                var indices: [ScadValue] = []
+                var searchStart = src.startIndex
+                while searchStart < src.endIndex, let range = src.range(of: target, range: searchStart..<src.endIndex) {
+                    let idx = src.distance(from: src.startIndex, to: range.lowerBound)
+                    indices.append(.number(Double(idx)))
+                    if numReturns > 0 && indices.count >= Int(numReturns) { break }
+                    searchStart = src.index(after: range.lowerBound)
+                }
+                return .vector(indices)
+            }
+            
+            if let list = table.asVector() {
+                var indices: [ScadValue] = []
+                for (i, elem) in list.enumerated() {
+                    let compareVal: ScadValue
+                    if let row = elem.asVector(), colNum < row.count {
+                        compareVal = row[colNum]
+                    } else {
+                        compareVal = elem
+                    }
+                    if compareVal == matchVal {
+                        indices.append(.number(Double(i)))
+                        if numReturns > 0 && indices.count >= Int(numReturns) { break }
+                    }
+                }
+                return .vector(indices)
+            }
+            return .vector([])
+        },
+        "version": { _ in
+            return .vector([.number(2024), .number(1), .number(0)])
+        },
+        "version_num": { _ in
+            return .number(20240100)
+        },
+        "parent_module": { _ in
+            return .string("")
         }
     ]
 }
