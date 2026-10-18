@@ -1,0 +1,23 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# Xcode / SPM Build Artifacts
+.build/
+DerivedData/
+*.xcodeproj
+*.xcworkspace
+xcuserdata/
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Generated App Bundle
+Scad2Stl.app/
+
+# Temporary files
+*.tmp
+/tmp/
